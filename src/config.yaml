@@ -1,11 +1,7 @@
 site:
-  # TODO(swap-before-deploy): set to the real GitHub Pages URL, e.g.
-  # https://<github-username>.github.io/<repo-name>
   name: Aurora Del Pino Gallardo
-  site: 'https://aurora-del-pino.github.io/portfolio'
-  # GitHub Pages serves a project site from a sub-path. For a user site
-  # (https://<user>.github.io) set this to '/'.
-  base: '/portfolio'
+  site: 'https://joselusw.github.io'
+  base: '/auroragallardo'
   trailingSlash: false
 
   googleSiteVerificationId: ''
