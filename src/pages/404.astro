@@ -1,24 +1,28 @@
 ---
-import Layout from '~/layouts/Layout.astro';
+import PageLayout from '~/layouts/PageLayout.astro';
 import { getHomePermalink } from '~/utils/permalinks';
-
-const title = `Error 404`;
+import { profile } from '~/data/portfolio';
 ---
 
-<Layout metadata={{ title }}>
-  <section class="flex items-center h-full p-16">
-    <div class="container flex flex-col items-center justify-center px-5 mx-auto my-8">
-      <div class="max-w-md text-center">
-        <h2 class="mb-8 font-bold text-9xl">
-          <span class="sr-only">Error</span>
-          <span class="text-primary">404</span>
-        </h2>
-        <p class="text-3xl font-semibold md:text-3xl">Sorry, we couldn't find this page.</p>
-        <p class="mt-4 mb-8 text-lg text-muted dark:text-slate-400">
-          But don't worry, you can find plenty of other things on our homepage.
-        </p>
-        <a rel="noopener noreferrer" href={getHomePermalink()} class="btn ml-4">Back to homepage</a>
-      </div>
+<PageLayout metadata={{ title: 'Page not found', description: 'That page does not exist.' }} hasHeader={false}>
+  <section class="shell flex min-h-screen flex-col justify-center py-[var(--section-y)]">
+    <p class="label text-ash">Error 404</p>
+
+    <h1 class="mt-6 font-display text-display">
+      <span class="sr-only">Page not found.</span>
+      <span aria-hidden="true">Not here.</span>
+    </h1>
+
+    <div class="mt-10 flex flex-wrap items-center gap-6">
+      <a href={getHomePermalink()} class="btn btn-solid">Back to the portfolio</a>
+      <a
+        href="https://www.linkedin.com/in/auroradpgallardo/"
+        class="link-rule text-small"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Or find {profile.firstName} on LinkedIn
+      </a>
     </div>
   </section>
-</Layout>
+</PageLayout>

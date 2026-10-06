@@ -33,18 +33,44 @@ export default defineConfig({
     defaultStrategy: 'viewport',
   },
 
-  // Native Fonts API: self-hosts + subsets + preloads Inter and generates
-  // metric-adjusted fallbacks. Injected via <Font /> in Layout.astro and
-  // consumed through the `--font-inter` CSS variable in CustomStyles.astro.
+  // Native Fonts API: self-hosts, subsets and preloads every family below, and
+  // generates metric-adjusted fallbacks (so the swap to the webfont never shifts
+  // layout). Injected via <Font /> in Layout.astro and consumed through the
+  // --font-* CSS variables in CustomStyles.astro.
+  //
+  // Three roles, deliberately different:
+  //   --font-display  the logotype and headlines. A grotesque with real
+  //                   character at 120px, set very tight.
+  //   --font-body     prose, which a portfolio actually has to be readable in.
+  //   --font-mono     labels, indices and the ruler readout. Numbers and
+  //                   metadata should not be set in a proportional face.
   fonts: [
     {
       provider: fontProviders.fontsource(),
-      name: 'Inter',
-      cssVariable: '--font-inter',
-      weights: ['100 900'],
+      name: 'Instrument Sans',
+      cssVariable: '--awf-display',
+      weights: ['400 700'],
       styles: ['normal'],
       subsets: ['latin'],
       fallbacks: ['sans-serif'],
+    },
+    {
+      provider: fontProviders.fontsource(),
+      name: 'Geist',
+      cssVariable: '--awf-body',
+      weights: ['100 900'],
+      styles: ['normal'],
+      subsets: ['latin'],
+      fallbacks: ['system-ui', 'sans-serif'],
+    },
+    {
+      provider: fontProviders.fontsource(),
+      name: 'Geist Mono',
+      cssVariable: '--awf-mono',
+      weights: ['100 900'],
+      styles: ['normal'],
+      subsets: ['latin'],
+      fallbacks: ['monospace'],
     },
   ],
 

@@ -1,0 +1,303 @@
+---
+import Image from '~/components/common/Image.astro';
+import { hero, links, profile } from '~/data/portfolio';
+
+const portrait = profile.portrait?.src ? profile.portrait : null;
+const contactHref = profile.email ? `mailto:${profile.email}` : links.linkedin;
+---
+
+<section id="top" class="hero">
+  <div class="shell hero__inner">
+    <div class="hero__copy" data-reveal>
+      <p class="label hero__byline">{profile.fullName}</p>
+      <h1 class="hero__title font-display">
+        {hero.headline}
+        <span class="hero__emphasis">{hero.headlineEmphasis}</span>
+      </h1>
+      <p class="hero__lede">{hero.lede}</p>
+
+      <div class="hero__actions">
+        <a
+          href={contactHref}
+          class="hero__button hero__button--dark"
+          target={profile.email ? undefined : '_blank'}
+          rel={profile.email ? undefined : 'noopener noreferrer'}
+        >
+          {profile.email ? 'Get in touch' : 'Connect on LinkedIn'}
+          <span aria-hidden="true">↗</span>
+        </a>
+        <a href={`${import.meta.env.BASE_URL}#capabilities`} class="hero__text-link">
+          Explore my approach <span aria-hidden="true">↓</span>
+        </a>
+      </div>
+    </div>
+
+    {
+      portrait && (
+        <figure class="hero__portrait" data-reveal style="--reveal-delay: 140ms">
+          <div class="hero__photo">
+            <Image
+              src={portrait.src}
+              alt={portrait.alt}
+              layout="none"
+              widths={[320, 480, 640, 800]}
+              sizes="(min-width: 768px) 42vw, 100vw"
+              loading="eager"
+              fetchpriority="high"
+              decoding="sync"
+              class="hero__image"
+            />
+          </div>
+          <figcaption class="hero__caption">
+            <span class="hero__caption-orbit" aria-hidden="true">
+              ✳
+            </span>
+            <span class="label">Designing for the whole journey</span>
+          </figcaption>
+          <span class="hero__sticker label">
+            Málaga
+            <br />
+            Spain
+          </span>
+        </figure>
+      )
+    }
+  </div>
+
+  <div class="shell hero__footer" data-reveal style="--reveal-delay: 260ms">
+    <p class="hero__scroll label"><span aria-hidden="true">↓</span> Scroll to explore</p>
+    <p class="hero__index label">Product design <span aria-hidden="true">/</span> Growth thinking</p>
+  </div>
+</section>
+
+<style>
+  .hero {
+    --hero-ground: #f1765d;
+    --hero-ink: #282624;
+    --hero-pop: #e7f276;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: var(--hero-ground);
+    color: var(--hero-ink);
+  }
+
+  .hero__inner {
+    display: grid;
+    align-items: center;
+    gap: clamp(2.5rem, 7vw, 6.5rem);
+    padding-block: clamp(3.25rem, 8vw, 7.5rem) clamp(3rem, 5vw, 5rem);
+  }
+
+  .hero__copy {
+    position: relative;
+    z-index: 1;
+    max-width: 46rem;
+  }
+
+  .hero__byline {
+    margin-top: clamp(0.5rem, 2vw, 1.5rem);
+  }
+
+  .hero__title {
+    max-width: 10ch;
+    margin-top: 1rem;
+    font-size: clamp(3.5rem, 7.6vw, 7.25rem);
+    font-weight: 500;
+    line-height: 0.9;
+    letter-spacing: -0.065em;
+  }
+
+  .hero__emphasis {
+    display: block;
+    color: #f9f4e8;
+  }
+
+  .hero__lede {
+    max-width: 42ch;
+    margin-top: 1.5rem;
+    font-size: clamp(1rem, 1.3vw, 1.15rem);
+    line-height: 1.65;
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.25rem;
+    margin-top: 2rem;
+  }
+
+  .hero__button {
+    display: inline-flex;
+    min-height: 3.25rem;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    border: 1px solid var(--hero-ink);
+    border-radius: 9999px;
+    padding: 0.85rem 1.35rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition:
+      color 180ms ease,
+      background-color 180ms ease,
+      transform 180ms ease;
+  }
+
+  .hero__button:hover {
+    transform: translateY(-2px);
+  }
+
+  .hero__button--dark {
+    background: var(--hero-ink);
+    color: #fffaf0;
+  }
+
+  .hero__button--dark:hover {
+    background: transparent;
+    color: var(--hero-ink);
+  }
+
+  .hero__text-link {
+    padding-block: 0.6rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .hero__text-link span {
+    display: inline-block;
+    margin-left: 0.35rem;
+    transition: transform 180ms ease;
+  }
+
+  .hero__text-link:hover span {
+    transform: translateY(3px);
+  }
+
+  .hero__portrait {
+    position: relative;
+    width: min(100%, 29rem);
+    margin: 0 auto;
+    transform: rotate(2deg);
+  }
+
+  .hero__photo {
+    overflow: hidden;
+    border: 0.65rem solid #fbf7ed;
+    background: #fbf7ed;
+    box-shadow: 0 1.5rem 4rem rgb(40 38 36 / 0.17);
+  }
+
+  .hero__image {
+    display: block;
+    width: 100%;
+    aspect-ratio: 0.87;
+    object-fit: cover;
+    object-position: center 35%;
+    transition: transform 700ms cubic-bezier(0.2, 0.75, 0.25, 1);
+  }
+
+  .hero__portrait:hover .hero__image {
+    transform: scale(1.035);
+  }
+
+  .hero__caption {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-top: 1rem;
+    transform: rotate(-2deg);
+  }
+
+  .hero__caption-orbit {
+    color: #fbf7ed;
+    font-size: 1.4rem;
+    animation: slow-orbit 12s linear infinite;
+  }
+
+  .hero__sticker {
+    position: absolute;
+    right: -1.3rem;
+    bottom: 4rem;
+    display: grid;
+    width: 5.5rem;
+    aspect-ratio: 1;
+    place-content: center;
+    border-radius: 50%;
+    background: var(--hero-pop);
+    text-align: center;
+    line-height: 1.6;
+    transform: rotate(9deg);
+    box-shadow: 0 0.75rem 2rem rgb(40 38 36 / 0.13);
+  }
+
+  .hero__footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    border-top: 1px solid rgb(40 38 36 / 0.23);
+    padding-block: 1rem 1.25rem;
+  }
+
+  .hero__scroll,
+  .hero__index {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .hero__scroll span {
+    font-size: 1rem;
+    animation: nudge-down 1.5s ease-in-out infinite;
+  }
+
+  @media (width >= 48rem) {
+    .hero__inner {
+      grid-template-columns: minmax(0, 1.1fr) minmax(19rem, 0.75fr);
+      min-height: min(46rem, calc(100svh - 5rem));
+    }
+  }
+
+  @media (width < 40rem) {
+    .hero__footer {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .hero__portrait {
+      width: min(82%, 24rem);
+      margin-right: 1rem;
+    }
+
+    .hero__sticker {
+      right: -1.1rem;
+    }
+  }
+
+  @keyframes slow-orbit {
+    to {
+      transform: rotate(1turn);
+    }
+  }
+
+  @keyframes nudge-down {
+    50% {
+      transform: translateY(4px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero__caption-orbit,
+    .hero__scroll span {
+      animation: none;
+      transition: none;
+    }
+
+    .hero__image,
+    .hero__button,
+    .hero__text-link span {
+      transition: none;
+    }
+  }
+</style>

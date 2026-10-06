@@ -1,48 +1,138 @@
 ---
-// Font family is provided by Astro's native Fonts API (see `fonts` in
-// astro.config.ts and <Font /> in Layout.astro), exposed as `--font-inter`.
-// To switch typefaces, change the `fonts` entry and repoint `--aw-font-*` below.
+// Typefaces come from Astro's native Fonts API (see `fonts` in astro.config.ts
+// and the <Font /> tags in Layout.astro), exposed as --font-display, --font-body
+// and --font-mono. To switch typefaces, change the `fonts` entries and repoint
+// --aw-font-* below.
 ---
 
 <style is:inline>
   :root {
-    --aw-font-sans: var(--font-inter);
-    --aw-font-serif: var(--font-inter);
-    --aw-font-heading: var(--font-inter);
+    /* ── Type ──────────────────────────────────────────────────────────── */
+    --aw-font-heading: var(--awf-display);
+    --aw-font-sans: var(--awf-body);
+    --aw-font-serif: var(--awf-body);
 
-    --aw-color-primary: rgb(1 97 239);
-    --aw-color-secondary: rgb(1 84 207);
-    --aw-color-accent: rgb(109 40 217);
+    /* ── Colour ──────────────────────────────────────────────────────────
+       Five values carry the entire palette. `paper` is the page, `ink` is
+       every glyph and every hairline, `ash` is the only third voice, `wash`
+       is the single surface tone that image wells need, and the two
+       hairline steps are the structural device the whole layout is built on. */
+    --paper: #f6f3ee;
+    --ink: #262421;
+    --ash: #716c65;
+    --wash: #eae5dc;
+    --hairline: rgb(38 36 33 / 0.14);
+    --hairline-strong: rgb(38 36 33 / 0.3);
 
-    --aw-color-text-heading: rgb(0 0 0);
-    --aw-color-text-default: rgb(16 16 16);
-    --aw-color-text-muted: rgb(16 16 16 / 66%);
-    --aw-color-bg-page: rgb(255 255 255);
+    /* The same hairline and ash values, drawn in light. The margin ruler
+       crosses the inverted work section, and it is fixed, so it cannot simply
+       be repainted by the section's own tokens — it needs a set of strokes
+       that read against an ink ground without any JavaScript deciding when to
+       swap them. See the note in Ruler.astro. */
+    --ash-inverted: #b9b2a8;
+    --hairline-inverted: rgb(246 243 238 / 0.18);
 
-    --aw-color-bg-page-dark: rgb(8 9 10);
+    /* AstroWind-compatible aliases, so the remaining template components pick
+       up this palette without being rewritten. */
+    --aw-color-primary: var(--ink);
+    --aw-color-secondary: var(--ink);
+    --aw-color-accent: var(--ink);
+    --aw-color-text-heading: var(--ink);
+    --aw-color-text-default: var(--ink);
+    --aw-color-text-muted: var(--ash);
+    --aw-color-bg-page: var(--paper);
+    --aw-color-bg-page-dark: var(--ink);
+    --aw-color-link: var(--ink);
+
+    /* Keep sections close enough to read as one portfolio, not separate pages. */
+    --gutter: 1.5rem;
+    --section-y: 3rem;
+
+    color-scheme: light;
 
     ::selection {
-      background-color: lavender;
+      background-color: var(--ink);
+      color: var(--paper);
     }
   }
 
+  @media (width >= 48rem) {
+    :root {
+      --gutter: 2.5rem;
+      --section-y: 4rem;
+    }
+  }
+
+  @media (width >= 80rem) {
+    :root {
+      --gutter: 4rem;
+      --section-y: 5rem;
+    }
+  }
+
+  /* Dark mode is a straight inversion of the same five values rather than a
+     second design: the paper becomes ink, the ink becomes paper, the ash is
+     lightened so it still clears contrast on the dark ground. */
   .dark {
-    --aw-font-sans: var(--font-inter);
-    --aw-font-serif: var(--font-inter);
-    --aw-font-heading: var(--font-inter);
+    --aw-font-heading: var(--awf-display);
+    --aw-font-sans: var(--awf-body);
+    --aw-font-serif: var(--awf-body);
 
-    --aw-color-primary: rgb(1 97 239);
-    --aw-color-secondary: rgb(1 84 207);
-    --aw-color-accent: rgb(109 40 217);
+    --paper: #211f20;
+    --ink: #f6f3ee;
+    --ash: #b9b2a8;
+    --wash: #302d2d;
+    --hairline: rgb(246 243 238 / 0.16);
+    --hairline-strong: rgb(246 243 238 / 0.32);
 
-    --aw-color-text-heading: rgb(247, 248, 248);
-    --aw-color-text-default: rgb(229 236 246);
-    --aw-color-text-muted: rgb(229 236 246 / 66%);
-    --aw-color-bg-page: rgb(8 9 10);
+    --aw-color-text-heading: var(--ink);
+    --aw-color-text-default: var(--ink);
+    --aw-color-text-muted: var(--ash);
+    --aw-color-bg-page: var(--paper);
+    --aw-color-link: var(--ink);
+
+    color-scheme: dark;
 
     ::selection {
-      background-color: black;
-      color: snow;
+      background-color: var(--ink);
+      color: var(--paper);
+    }
+  }
+
+  /* ── The inverted ground ────────────────────────────────────────────────
+     A nested inversion, for a section that is dark inside a light page.
+
+     This has to re-declare the Tailwind theme keys as well as the raw tokens,
+     and the reason is worth recording. Tailwind v4's `@theme` block emits
+     `--color-ash: var(--ash)` on `:root`, and a custom property is substituted
+     where it is *declared* — so on `:root` that resolves to the light ash, and
+     the resolved value is what inherits down. Re-pointing only `--ash` on a
+     wrapper deep in the tree therefore leaves every `text-ash` inside it still
+     light. `.dark` gets away without this only because it sits on `<html>`,
+     where both declarations land on the same element. Declaring both here is
+     what lets a section invert on its own. */
+  .invert {
+    --paper: #211f20;
+    --ink: #f6f3ee;
+    --ash: #b9b2a8;
+    --wash: #302d2d;
+    --hairline: rgb(246 243 238 / 0.16);
+    --hairline-strong: rgb(246 243 238 / 0.32);
+
+    /* The Tailwind theme keys, re-aliased so the utilities see the new values. */
+    --color-paper: var(--paper);
+    --color-ink: var(--ink);
+    --color-ash: var(--ash);
+    --color-wash: var(--wash);
+    --color-hairline: var(--hairline);
+    --color-hairline-strong: var(--hairline-strong);
+
+    color: var(--ink);
+    color-scheme: dark;
+
+    ::selection {
+      background-color: var(--ink);
+      color: var(--paper);
     }
   }
 </style>

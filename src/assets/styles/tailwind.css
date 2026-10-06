@@ -2,151 +2,275 @@
 
 @plugin "@tailwindcss/typography";
 
-/* shadcn/ui-compatible tokens derived from the --aw-* variables. */
-@import './shadcn.css';
-
 @variant dark (&:where(.dark, .dark *));
 
-@custom-variant intersect (&:not([no-intersect]));
-
 @theme {
-  --color-primary: var(--aw-color-primary);
-  --color-secondary: var(--aw-color-secondary);
-  --color-accent: var(--aw-color-accent);
-  --color-heading: var(--aw-color-text-heading);
-  --color-default: var(--aw-color-text-default);
-  --color-muted: var(--aw-color-text-muted);
-  --color-link: var(--aw-color-link, var(--aw-color-primary));
+  /* Colour: five tokens, no more. See CustomStyles.astro for the values. */
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-ash: var(--ash);
+  --color-wash: var(--wash);
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
 
-  --font-sans:
-    var(--aw-font-sans, ui-sans-serif), ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-    'Segoe UI Symbol', 'Noto Color Emoji';
-  --font-serif: var(--aw-font-serif, ui-serif), ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
-  --font-heading: var(--aw-font-heading, ui-sans-serif), ui-sans-serif, system-ui, sans-serif;
+  /* Type roles. Each points at a differently-named variable supplied by
+     Astro's Fonts API, so these theme keys can safely drive the `font-*`
+     utilities without referring to themselves. */
+  --font-display: var(--awf-display), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--awf-body), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--awf-mono), ui-monospace, 'SFMono-Regular', monospace;
 
-  --animate-fade: fadeInUp 0.5s both;
+  /* Type scale. Display and headings sit on a tight, negative-tracked setting
+     because they are large; body sits at 15px — the reference site's exact
+     size — with a comfortable leading. */
+  --text-display: clamp(3.25rem, 12.5vw, 7.5rem);
+  --text-display--line-height: 0.9;
+  --text-display--letter-spacing: -0.04em;
+  --text-display--font-weight: 500;
 
-  @keyframes fadeInUp {
-    0% {
-      opacity: 0;
-      transform: translateY(0.75rem);
+  --text-title: clamp(2rem, 5vw, 3.25rem);
+  --text-title--line-height: 1.02;
+  --text-title--letter-spacing: -0.032em;
+  --text-title--font-weight: 500;
+
+  --text-section: clamp(1.375rem, 2.6vw, 2rem);
+  --text-section--line-height: 1.1;
+  --text-section--letter-spacing: -0.022em;
+  --text-section--font-weight: 500;
+
+  --text-subhead: 1.0625rem;
+  --text-subhead--line-height: 1.35;
+  --text-subhead--letter-spacing: -0.012em;
+  --text-subhead--font-weight: 500;
+
+  --text-body: 0.9375rem;
+  --text-body--line-height: 1.6;
+
+  --text-small: 0.8125rem;
+  --text-small--line-height: 1.5;
+}
+
+@layer base {
+  html {
+    /* The reference scales its root font size from the viewport in JS. A
+       clamp() on the type scale gets the same optical result with no script
+       and no layout thrash on resize. */
+    -webkit-text-size-adjust: 100%;
+    scrollbar-gutter: stable;
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
     }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  }
+
+  body {
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    /* Anton & Irene disable text selection site-wide. That is a deliberate
+       choice for an art-directed portfolio, not something to copy by default —
+       it makes the copy uncopyable for recruiters and reviewers, so this site
+       keeps selection available and only opts out of the callout menu. */
+    -webkit-touch-callout: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* One focus treatment for the whole site: a 2px ink ring, offset so it never
+     collides with the hairline it sits against. */
+  :focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+    border-radius: 1px;
+  }
+
+  ::selection {
+    background-color: var(--ink);
+    color: var(--paper);
   }
 }
 
-@utility bg-page {
-  background-color: var(--aw-color-bg-page);
+/* ── Structure ──────────────────────────────────────────────────────────
+   The hairline is this site's only structural device. Everything is divided
+   by it; nothing is divided by a card, a shadow or a background block. */
+
+@utility hair {
+  border-color: var(--hairline);
 }
 
-@utility bg-dark {
-  background-color: var(--aw-color-bg-page-dark);
+@utility hair-t {
+  border-top: 1px solid var(--hairline);
 }
 
-@utility text-page {
-  color: var(--aw-color-text-default);
+@utility hair-b {
+  border-bottom: 1px solid var(--hairline);
 }
 
-@utility text-muted {
-  color: var(--aw-color-text-muted);
+@utility hair-l {
+  border-left: 1px solid var(--hairline);
 }
+
+@utility hair-r {
+  border-right: 1px solid var(--hairline);
+}
+
+/* ── Layout ───────────────────────────────────────────────────────────
+   One container definition, shared by the header, footer, every section and
+   the ruler, so the two vertical hairlines land on exactly the same edges as
+   the content column they are measuring. */
+@utility shell {
+  width: 100%;
+  max-width: 100rem;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* ── Type roles ────────────────────────────────────────────────────────
+   The mono label is the site's utility voice: section indices, eyebrows,
+   metadata, and the ruler readout all speak in it. */
+
+@utility label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.2;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 400;
+}
+
+/* ── Actions ───────────────────────────────────────────────────────────
+   The pill from the reference: a 1px border, fully rounded, transparent
+   until hover, then a solid inversion. No shadows, no gradients, ever. */
 
 @utility btn {
-  @apply inline-flex items-center justify-center rounded-full border-gray-400 border bg-transparent font-medium text-center text-base text-page leading-snug transition py-3.5 px-6 md:px-8 ease-in duration-200 focus:ring-blue-500 focus:ring-offset-blue-200 focus:ring-2 focus:ring-offset-2 hover:bg-gray-100 hover:border-gray-600 dark:text-slate-300 dark:border-slate-500 dark:hover:bg-slate-800 dark:hover:border-slate-800 cursor-pointer;
+  @apply inline-flex cursor-pointer items-center justify-center rounded-full border font-body text-body leading-none transition-colors duration-200;
+  border-color: var(--ink);
+  padding: 0.9375rem 1.9375rem;
 }
 
-@utility btn-primary {
-  @apply btn font-semibold bg-primary text-white border-primary hover:bg-secondary hover:border-secondary hover:text-white dark:text-white dark:bg-primary dark:border-primary dark:hover:border-secondary dark:hover:bg-secondary;
+@utility btn-solid {
+  @apply btn bg-ink text-paper;
 }
 
-@utility btn-secondary {
-  @apply btn;
+@utility btn-ghost {
+  @apply btn bg-transparent text-ink;
 }
 
-@utility btn-tertiary {
-  @apply btn border-none shadow-none text-muted hover:text-gray-900 dark:text-gray-400 dark:hover:text-white;
+@utility btn-sm {
+  @apply btn text-small;
+  padding: 0.6875rem 1.25rem;
 }
 
-/* Sticky header: solid page background on phones, translucent page background with blur on desktop. */
-#header.scroll > div:first-child {
-  @apply bg-page lg:backdrop-blur-md;
-  box-shadow: 0 0.375rem 1.5rem 0 rgb(140 152 164 / 13%);
-}
-@media (width >= 64rem) {
-  #header.scroll > div:first-child {
-    background-color: color-mix(in srgb, var(--aw-color-bg-page) 90%, transparent);
+/* Underline that appears on hover rather than one that is always there —
+   quieter at rest, which is what the rest of the page does. */
+@utility link-rule {
+  @apply text-ink transition-colors duration-150;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 0.25em;
+  text-decoration-thickness: 1px;
+
+  &:hover {
+    text-decoration-color: currentColor;
   }
 }
-.dark #header.scroll > div:first-child,
-#header.scroll.dark > div:first-child {
-  @apply border-b border-gray-500/20;
-  box-shadow: none;
+
+@utility link-invert {
+  @apply transition-colors duration-150;
+
+  &:hover {
+    color: var(--paper);
+  }
 }
 
-#header.expanded nav {
-  position: fixed;
-  top: 70px;
-  left: 0;
-  right: 0;
-  bottom: 70px !important;
-  padding: 0 5px;
+/* ── Case study prose ───────────────────────────────────────────────────
+   The typography plugin's defaults are a comfortable serif grey; this site
+   overrides every one of them back to the same five colours and one face. */
+
+.prose {
+  --tw-prose-body: var(--ink);
+  --tw-prose-headings: var(--ink);
+  --tw-prose-links: var(--ink);
+  --tw-prose-bold: var(--ink);
+  --tw-prose-counters: var(--ash);
+  --tw-prose-bullets: var(--ash);
+  --tw-prose-hr: var(--hairline);
+  --tw-prose-quotes: var(--ink);
+  --tw-prose-quote-borders: var(--hairline-strong);
+  --tw-prose-captions: var(--ash);
+  --tw-prose-code: var(--ink);
+  --tw-prose-th-borders: var(--hairline-strong);
+  --tw-prose-td-borders: var(--hairline);
+
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.65;
+  max-width: 34rem;
 }
 
-.dropdown:focus .dropdown-menu,
-.dropdown:focus-within .dropdown-menu,
-.dropdown:hover .dropdown-menu {
-  display: block;
+.prose :where(h2):not(:where([class~='not-prose'] *)) {
+  font-family: var(--font-display);
+  font-size: var(--text-section);
+  line-height: var(--text-section--line-height);
+  letter-spacing: var(--text-section--letter-spacing);
+  font-weight: 500;
+  margin-top: 3rem;
+  margin-bottom: 0.75rem;
 }
 
-[astro-icon].icon-light > * {
-  stroke-width: 1.2;
+.prose :where(h3):not(:where([class~='not-prose'] *)) {
+  font-family: var(--font-display);
+  font-size: var(--text-subhead);
+  font-weight: 500;
+  letter-spacing: -0.012em;
+  margin-top: 2rem;
+  margin-bottom: 0.5rem;
 }
 
-[astro-icon].icon-bold > * {
-  stroke-width: 2.4;
+.prose :where(a):not(:where([class~='not-prose'] *)) {
+  text-decoration-color: var(--hairline-strong);
+  text-underline-offset: 0.25em;
+  text-decoration-thickness: 1px;
 }
 
-[data-aw-toggle-menu] path {
-  @apply transition;
-}
-[data-aw-toggle-menu].expanded g > path:first-child {
-  @apply -rotate-45 translate-y-[15px] translate-x-[-3px];
-}
-[data-aw-toggle-menu].expanded g > path:last-child {
-  @apply rotate-45 translate-y-[-8px] translate-x-[14px];
+.prose :where(a):not(:where([class~='not-prose'] *)):hover {
+  text-decoration-color: currentColor;
 }
 
-/* Current page in the header navigation (set server-side in Header.astro and
-   kept in sync on client-side navigations). Override --aw-color-link in
-   CustomStyles.astro to change the colour. */
-#header nav .aw-link-active {
-  @apply text-link;
-}
-
-.dd *:first-child {
-  margin-top: 0;
-}
-
-/* Blog prose: inline code without the typography plugin's backticks, and
-   code blocks that follow the light/dark theme (Shiki dual themes). */
-.prose :where(code):not(:where(pre *)) {
-  background-color: color-mix(in oklab, var(--aw-color-text-default) 8%, transparent);
+.prose :where(code):not(:where([class~='not-prose'] *)) {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background-color: var(--wash);
   border-radius: 0.25rem;
-  padding: 0.125rem 0.375rem;
+  padding: 0.1em 0.35em;
   font-weight: 500;
 }
+
 .prose :where(code):not(:where(pre *))::before,
 .prose :where(code):not(:where(pre *))::after {
   content: none;
 }
-.prose :where(pre.astro-code) {
-  border: 1px solid color-mix(in oklab, var(--aw-color-text-default) 12%, transparent);
+
+.prose :where(pre):not(:where([class~='not-prose'] *)) {
+  background-color: var(--wash);
+  border: 1px solid var(--hairline);
+  border-radius: 0;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  padding: 1.25rem;
 }
-.dark .astro-code,
-.dark .astro-code span {
-  color: var(--shiki-dark) !important;
-  background-color: var(--shiki-dark-bg) !important;
+
+.prose :where(blockquote):not(:where([class~='not-prose'] *)) {
+  border-left: 1px solid var(--hairline-strong);
+  font-style: normal;
+  font-weight: 400;
+}
+
+.prose :where(img):not(:where([class~='not-prose'] *)) {
+  border: 1px solid var(--hairline);
+  border-radius: 0;
 }

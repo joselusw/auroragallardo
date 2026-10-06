@@ -1,0 +1,334 @@
+---
+import { trajectory } from '~/data/portfolio';
+import { employers } from '~/data/portfolio';
+
+const experienceSteps = trajectory.steps.map((step, index) => {
+  const employer = step.employer ? employers.find((item) => item.slug === step.employer) : undefined;
+
+  if (step.employer && !employer) {
+    throw new Error(`Unknown employer "${step.employer}" in experience chapter ${index + 1}.`);
+  }
+
+  const introducesEmployer = Boolean(
+    employer && trajectory.steps.slice(0, index).every((previous) => previous.employer !== employer.slug)
+  );
+
+  const organization = employer
+    ? {
+        title: employer.wordmark,
+        url: employer.url,
+        detail: employer.industry,
+        summary: introducesEmployer ? employer.summary : undefined,
+      }
+    : step.organization;
+
+  return { step, index, organization };
+});
+---
+
+<section id="path" class="path scroll-mt-24">
+  <div class="shell path__inner">
+    <header class="path__heading" data-reveal>
+      <p class="label path__eyebrow">Experience, in sequence</p>
+      <h2 class="font-display path__title">The long way<br /><span>was the useful one.</span></h2>
+      <p class="path__lede">{trajectory.lede}</p>
+    </header>
+
+    <ol class="path__timeline">
+      {
+        experienceSteps.map(({ step, index, organization }) => (
+          <li class="path__step" data-reveal style={`--reveal-delay:${index * 90}ms`}>
+            <span class="path__year font-display">{step.year}</span>
+            <span class="path__node" aria-hidden="true" />
+            <div class="path__role">
+              <span class="path__chapter label">Chapter {String(index + 1).padStart(2, '0')}</span>
+              <h3 class="font-display">{step.title}</h3>
+            </div>
+            <div class="path__detail">
+              {organization && (
+                <div class="path__organization">
+                  <a
+                    class="path__organization-name"
+                    href={organization.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Visit ${organization.title} website (opens in a new tab)`}
+                  >
+                    {organization.title} <span aria-hidden="true">↗</span>
+                  </a>
+                  <span class="path__organization-detail">{organization.detail}</span>
+                </div>
+              )}
+              {organization?.summary && <p class="path__organization-summary">{organization.summary}</p>}
+              {step.body && <p class="path__body">{step.body}</p>}
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .path {
+    --path-paper: #f0eff7;
+    --path-ink: #292638;
+    --path-muted: #625e70;
+    --path-accent: #6555ad;
+    --path-line: rgb(41 38 56 / 0.14);
+    --path-line-strong: color-mix(in srgb, var(--path-accent) 36%, transparent);
+    --path-node-border: var(--path-paper);
+    --path-node-hover: #d9ef6b;
+    overflow: hidden;
+    background: var(--path-paper);
+    color: var(--path-ink);
+  }
+
+  .path__inner {
+    padding-block: clamp(4rem, 8vw, 7.5rem);
+  }
+
+  .path__heading {
+    display: grid;
+    align-items: end;
+    gap: 1.25rem 3rem;
+  }
+
+  .path__eyebrow {
+    grid-column: 1 / -1;
+    color: var(--path-accent);
+  }
+
+  .path__title {
+    font-size: clamp(3rem, 6.2vw, 6rem);
+    font-weight: 500;
+    line-height: 0.9;
+    letter-spacing: -0.065em;
+  }
+
+  .path__title span {
+    color: var(--path-accent);
+  }
+
+  .path__lede {
+    max-width: 38ch;
+    padding-bottom: 0.35rem;
+    color: var(--path-muted);
+    font-size: 0.98rem;
+    line-height: 1.65;
+  }
+
+  .path__timeline {
+    position: relative;
+    margin-top: clamp(2.75rem, 5vw, 4.5rem);
+  }
+
+  .path__timeline::before {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 23%;
+    width: 1px;
+    background: var(--path-line-strong);
+    content: '';
+  }
+
+  .path__step {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 23%) minmax(0, 1fr);
+    gap: 0.4rem 2rem;
+    padding-block: 1.35rem 1.65rem;
+    border-top: 1px solid var(--path-line);
+  }
+
+  .path__year {
+    grid-row: span 2;
+    align-self: start;
+    padding-right: 1.25rem;
+    color: var(--path-accent);
+    font-size: clamp(1.75rem, 3.5vw, 3.35rem);
+    line-height: 1;
+    letter-spacing: -0.055em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .path__node {
+    position: absolute;
+    top: 1.75rem;
+    left: calc(23% - 0.34rem);
+    width: 0.7rem;
+    aspect-ratio: 1;
+    border: 2px solid var(--path-node-border);
+    border-radius: 50%;
+    background: var(--path-accent);
+    box-shadow: 0 0 0 1px var(--path-accent);
+    transition:
+      transform 200ms ease,
+      background-color 200ms ease;
+  }
+
+  .path__step:hover .path__node {
+    transform: scale(1.35);
+    background: var(--path-node-hover);
+  }
+
+  .path__role {
+    grid-column: 2;
+  }
+
+  .path__chapter {
+    color: var(--path-muted);
+    font-size: 0.58rem;
+  }
+
+  .path__role h3 {
+    margin-top: 0.45rem;
+    font-size: clamp(1.45rem, 2.5vw, 2.2rem);
+    font-weight: 500;
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    transition: color 180ms ease;
+  }
+
+  .path__step:hover .path__role h3 {
+    color: var(--path-accent);
+  }
+
+  .path__detail {
+    grid-column: 2;
+    display: grid;
+    align-content: start;
+    gap: 0.55rem;
+    max-width: 58ch;
+    margin-top: 0.2rem;
+    color: var(--path-muted);
+    font-size: 0.9rem;
+    line-height: 1.65;
+  }
+
+  .path__organization {
+    display: grid;
+    justify-items: start;
+    gap: 0.25rem;
+  }
+
+  .path__organization-name {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    color: var(--path-ink);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+    transition: color 180ms ease;
+  }
+
+  .path__organization-name:hover,
+  .path__organization-name:focus-visible {
+    color: var(--path-accent);
+  }
+
+  .path__organization-name span {
+    color: var(--path-accent);
+    font-family: var(--font-mono);
+    font-size: 0.72em;
+    font-weight: 500;
+  }
+
+  .path__organization-detail {
+    color: var(--path-muted);
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+
+  .path__organization-summary {
+    margin: 0;
+    color: var(--path-muted);
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+
+  .path__body {
+    margin: 0;
+  }
+
+  :global(.dark) .path {
+    --path-paper: #2c2929;
+    --path-ink: #f6f3ee;
+    --path-muted: #c2bcb4;
+    --path-accent: #c4b8ff;
+    --path-line: rgb(246 243 238 / 0.17);
+    --path-line-strong: rgb(255 149 128 / 0.4);
+    --path-node-border: #2c2929;
+  }
+
+  :global(.dark) .path__step:hover .path__role h3 {
+    color: var(--path-accent);
+  }
+
+  @media (width >= 48rem) {
+    .path__heading {
+      grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.55fr);
+    }
+
+    .path__step {
+      grid-template-columns: minmax(0, 23%) minmax(0, 1fr) minmax(0, 0.9fr);
+      align-items: baseline;
+      gap: 2rem;
+      min-height: 8.25rem;
+      padding-block: 1.8rem;
+    }
+
+    .path__role {
+      grid-column: 2;
+    }
+
+    .path__detail {
+      grid-column: 3;
+      margin-top: 0;
+    }
+
+    .path__node {
+      top: 2.25rem;
+    }
+  }
+
+  @media (width < 32rem) {
+    .path__timeline::before {
+      left: 0.3rem;
+    }
+
+    .path__step {
+      grid-template-columns: 1fr;
+      gap: 0.55rem;
+      padding-left: 1.45rem;
+    }
+
+    .path__year,
+    .path__role,
+    .path__detail {
+      grid-column: 1;
+      grid-row: auto;
+    }
+
+    .path__year {
+      padding-right: 0;
+      font-size: 1.6rem;
+    }
+
+    .path__node {
+      top: 1.65rem;
+      left: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .path__node,
+    .path__role h3 {
+      transition: none;
+    }
+  }
+</style>

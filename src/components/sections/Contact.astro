@@ -1,0 +1,247 @@
+---
+import { contact, profile } from '~/data/portfolio';
+---
+
+<div class="contact-ground">
+  <section id="contact" class="contact-content shell scroll-mt-24" aria-labelledby="contact-title">
+    <div class="contact-topline label" data-reveal>
+      <span>THE NEXT CHAPTER STARTS HERE</span>
+      <span>{profile.location}</span>
+    </div>
+
+    <div class="contact-grid">
+      <div class="contact-intro" data-reveal>
+        <h2 id="contact-title" class="contact-title font-display">
+          {contact.headline.first}
+          <span>{contact.headline.second}</span>
+          <span class="contact-title__last">{contact.headline.third}<span class="contact-title__period">.</span></span>
+        </h2>
+        <p class="contact-lede">{contact.lede}</p>
+        <span class="contact-spark" aria-hidden="true">✳</span>
+      </div>
+
+      <nav class="contact-channels" aria-label="Contact Aurora" data-reveal style="--reveal-delay: 120ms">
+        {
+          contact.channels.map((channel, index) => (
+            <a
+              class:list={['contact-channel', { 'contact-channel--featured': index === 0 }]}
+              href={channel.href}
+              target={channel.label === 'LinkedIn' ? '_blank' : undefined}
+              rel={channel.label === 'LinkedIn' ? 'noopener noreferrer' : undefined}
+            >
+              <span class="contact-channel__top">
+                <span class="contact-channel__label label">{channel.label}</span>
+                <span class="contact-channel__arrow" aria-hidden="true">
+                  ↗
+                </span>
+              </span>
+              <span class="contact-channel__value">{channel.value}</span>
+              <span class="contact-channel__note">{channel.note}</span>
+            </a>
+          ))
+        }
+      </nav>
+    </div>
+
+    <div class="contact-footer">
+      <p class="label">© {new Date().getFullYear()} {profile.fullName} · {profile.location}</p>
+    </div>
+  </section>
+</div>
+
+<style>
+  .contact-ground {
+    --contact-ink: #28243d;
+    --contact-paper: #f0eff7;
+    --contact-lilac: #c4b8ff;
+    --contact-coral: #ff9580;
+    overflow: hidden;
+    background: var(--contact-ink);
+    color: var(--contact-paper);
+  }
+
+  .contact-content {
+    position: relative;
+    padding-block: clamp(2rem, 5vw, 4rem) clamp(1.5rem, 3vw, 2.5rem);
+  }
+
+  .contact-topline {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid rgb(240 239 247 / 0.24);
+    padding-bottom: 1rem;
+    color: rgb(240 239 247 / 0.68);
+    font-size: 0.62rem;
+  }
+
+  .contact-grid {
+    display: grid;
+    gap: clamp(2.5rem, 6vw, 5rem);
+    padding-block: clamp(3.5rem, 9vw, 7.5rem);
+  }
+
+  .contact-intro {
+    position: relative;
+    min-width: 0;
+  }
+
+  .contact-title {
+    max-width: 8ch;
+    font-size: clamp(4rem, 11vw, 9.5rem);
+    font-weight: 500;
+    line-height: 0.82;
+    letter-spacing: -0.085em;
+  }
+
+  .contact-title > span {
+    display: block;
+    color: var(--contact-lilac);
+  }
+
+  .contact-title .contact-title__last {
+    color: var(--contact-paper);
+  }
+
+  .contact-title__period {
+    color: var(--contact-coral);
+  }
+
+  .contact-lede {
+    max-width: 39ch;
+    margin-top: 1.75rem;
+    color: rgb(240 239 247 / 0.72);
+    font-size: clamp(0.95rem, 1.25vw, 1.1rem);
+    line-height: 1.65;
+  }
+
+  .contact-spark {
+    position: absolute;
+    top: 0.2rem;
+    right: 0.25rem;
+    color: var(--contact-coral);
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    animation: contact-spark-turn 18s linear infinite;
+  }
+
+  .contact-channels {
+    display: grid;
+    align-content: center;
+  }
+
+  .contact-channel {
+    display: grid;
+    gap: 0.45rem;
+    border-top: 1px solid rgb(240 239 247 / 0.24);
+    padding: 1.15rem 0;
+    color: var(--contact-paper);
+    transition:
+      padding 220ms cubic-bezier(0.2, 0.75, 0.25, 1),
+      color 220ms ease,
+      background-color 220ms ease;
+  }
+
+  .contact-channel:last-child {
+    border-bottom: 1px solid rgb(240 239 247 / 0.24);
+  }
+
+  .contact-channel__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .contact-channel__label {
+    color: var(--contact-lilac);
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+  }
+
+  .contact-channel__arrow {
+    color: var(--contact-coral);
+    font-size: 1.2rem;
+    transition: transform 220ms ease;
+  }
+
+  .contact-channel__value {
+    overflow-wrap: anywhere;
+    font-family: var(--font-display);
+    font-size: clamp(1.35rem, 2.5vw, 2rem);
+    line-height: 1.12;
+    letter-spacing: -0.04em;
+  }
+
+  .contact-channel__note {
+    color: rgb(240 239 247 / 0.62);
+    font-size: 0.82rem;
+    line-height: 1.45;
+  }
+
+  .contact-channel:hover,
+  .contact-channel:focus-visible {
+    padding-inline: 0.8rem;
+    background: rgb(196 184 255 / 0.1);
+  }
+
+  .contact-channel:hover .contact-channel__arrow,
+  .contact-channel:focus-visible .contact-channel__arrow {
+    transform: translate(3px, -3px);
+  }
+
+  .contact-channel:focus-visible {
+    outline: 2px solid var(--contact-lilac);
+    outline-offset: 4px;
+  }
+
+  .contact-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    border-top: 1px solid rgb(240 239 247 / 0.24);
+    padding-top: 1rem;
+    color: rgb(240 239 247 / 0.6);
+  }
+
+  .contact-footer > p {
+    font-size: 0.58rem;
+  }
+
+  @media (width >= 48rem) {
+    .contact-grid {
+      grid-template-columns: minmax(0, 1.2fr) minmax(20rem, 0.8fr);
+      align-items: center;
+    }
+  }
+
+  @media (width < 32rem) {
+    .contact-topline {
+      font-size: 0.52rem;
+    }
+
+    .contact-title {
+      font-size: clamp(3.7rem, 17vw, 5rem);
+    }
+
+    .contact-footer {
+      align-items: flex-start;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .contact-spark {
+      animation: none;
+    }
+
+    .contact-channel,
+    .contact-channel__arrow {
+      transition: none;
+    }
+  }
+
+  @keyframes contact-spark-turn {
+    to {
+      transform: rotate(1turn);
+    }
+  }
+</style>

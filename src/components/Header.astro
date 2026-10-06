@@ -1,0 +1,299 @@
+---
+import { profile } from '~/data/portfolio';
+
+/** Section anchors must carry the deployment base, or they resolve to the
+ *  domain root on a GitHub Pages project site and the jump silently fails. */
+const anchor = (id: string) => `${import.meta.env.BASE_URL}#${id}`;
+
+const navLinks = [
+  { text: 'Capabilities', href: anchor('capabilities') },
+  { text: 'Experience', href: anchor('path') },
+  { text: 'Contact', href: anchor('contact') },
+];
+---
+
+<header class="site-header" id="header">
+  <div class="shell flex items-center justify-between gap-6 py-5">
+    <a href={anchor('top')} class="header-mark font-display">
+      {profile.firstName}<span aria-hidden="true">.</span>
+    </a>
+
+    <nav class="hidden md:block flex-1" aria-label="Sections">
+      <ul class="flex items-center justify-center gap-7">
+        {
+          navLinks.map(({ text, href }) => (
+            <li>
+              <a href={href} class="label link-rule" data-nav>
+                {text}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="flex items-center gap-2">
+      <a href={anchor('contact')} class="btn btn-sm hidden md:inline-flex"> Let’s talk </a>
+      <button
+        type="button"
+        class="menu-toggle md:hidden"
+        aria-expanded="false"
+        aria-controls="menu-panel"
+        data-menu-toggle
+      >
+        <span class="sr-only">Menu</span>
+        <span class="menu-toggle-bar" aria-hidden="true"></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Slide-in panel. On phones this is the only navigation, so it carries the
+     theme control and the contact link too. -->
+<div class="menu-panel md:hidden" id="menu-panel" data-menu-panel inert>
+  <div class="shell flex h-full flex-col">
+    <div class="flex items-center justify-between py-5">
+      <span class="logotype text-paper">{profile.firstName}</span>
+      <button type="button" class="menu-close" data-menu-close>
+        <span class="sr-only">Close menu</span>
+        <span aria-hidden="true"></span>
+      </button>
+    </div>
+
+    <nav class="mt-8 flex-1" aria-label="Sections">
+      <ul class="flex flex-col">
+        {
+          navLinks.map(({ text, href }, i) => (
+            <li class="border-b border-white/10 last:border-b-0">
+              <a href={href} class="menu-item" data-menu-link style={`--i:${i}`}>
+                <span class="font-display text-title leading-none">{text}</span>
+                <span class="label text-white/70">0{i + 1}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+</div>
+
+<script>
+  // The header rule appears only once the page has moved, so the hero opens on
+  // a completely clean edge.
+  const header = document.querySelector<HTMLElement>('#header');
+
+  if (header) {
+    const sync = () => header.toggleAttribute('data-scrolled', window.scrollY > 8);
+    sync();
+    document.addEventListener('scroll', sync, { passive: true });
+    document.addEventListener('astro:page-load', sync);
+  }
+
+  const toggle = document.querySelector<HTMLElement>('[data-menu-toggle]');
+  const panel = document.querySelector<HTMLElement>('[data-menu-panel]');
+  const closeBtn = panel?.querySelector<HTMLElement>('[data-menu-close]');
+
+  const setOpen = (open: boolean) => {
+    panel?.classList.toggle('is-open', open);
+    panel?.toggleAttribute('inert', !open);
+    toggle?.setAttribute('aria-expanded', String(open));
+    document.documentElement.classList.toggle('overflow-hidden', open);
+    if (open) closeBtn?.focus();
+    else toggle?.focus();
+  };
+
+  toggle?.addEventListener('click', () => setOpen(!panel?.classList.contains('is-open')));
+  closeBtn?.addEventListener('click', () => setOpen(false));
+  panel?.querySelectorAll('[data-menu-link]').forEach((link) => link.addEventListener('click', () => setOpen(false)));
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && panel?.classList.contains('is-open')) setOpen(false);
+  });
+
+  // The panel is per-page markup; a client-side navigation replaces it, so
+  // close it whenever astro swaps the document.
+  document.addEventListener('astro:before-preparation', () => {
+    if (panel?.classList.contains('is-open')) {
+      panel.classList.remove('is-open');
+      panel.setAttribute('inert', '');
+      document.documentElement.classList.remove('overflow-hidden');
+    }
+  });
+</script>
+
+<style>
+  .header-mark {
+    flex: 0 0 auto;
+    font-size: 1.125rem;
+    font-weight: 600;
+    letter-spacing: -0.04em;
+  }
+
+  .header-mark span {
+    color: #c95f4b;
+  }
+
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background-color: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s ease;
+  }
+
+  /* The rule only appears once the page has moved, so the hero opens on a
+     completely clean edge. */
+  .site-header[data-scrolled] {
+    border-bottom-color: var(--hairline);
+  }
+
+  @media (width >= 48rem) {
+    .site-header .menu-toggle {
+      display: none;
+    }
+  }
+
+  /* A 32px circle, straight from the reference. */
+  .menu-toggle,
+  .menu-close {
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 9999px;
+    border: 1px solid var(--ink);
+    cursor: pointer;
+  }
+
+  .menu-toggle-bar,
+  .menu-toggle-bar::before,
+  .menu-toggle-bar::after {
+    display: block;
+    width: 0.875rem;
+    height: 1px;
+    background-color: var(--ink);
+    transition:
+      transform 0.25s ease,
+      opacity 0.2s ease;
+  }
+
+  .menu-toggle-bar {
+    position: relative;
+  }
+
+  .menu-toggle-bar::before,
+  .menu-toggle-bar::after {
+    content: '';
+    position: absolute;
+    left: 0;
+  }
+
+  .menu-toggle-bar::before {
+    top: -4px;
+  }
+
+  .menu-toggle-bar::after {
+    top: 4px;
+  }
+
+  .menu-toggle[aria-expanded='true'] .menu-toggle-bar {
+    background-color: transparent;
+  }
+
+  .menu-toggle[aria-expanded='true'] .menu-toggle-bar::before {
+    transform: translateY(4px) rotate(45deg);
+  }
+
+  .menu-toggle[aria-expanded='true'] .menu-toggle-bar::after {
+    transform: translateY(-4px) rotate(-45deg);
+  }
+
+  /* Panel. 8px corners and a 1px inset from the viewport, as in the reference;
+     full-bleed below the small breakpoint where there is no room for it. */
+  .menu-panel {
+    position: fixed;
+    inset: 0.75rem;
+    z-index: 50;
+    background-color: var(--ink);
+    color: var(--paper);
+    border-radius: 8px;
+    opacity: 0;
+    transform: translateX(1.5rem);
+    transition:
+      opacity 0.3s ease,
+      transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .dark .menu-panel {
+    background-color: var(--paper);
+    color: var(--ink);
+  }
+
+  .menu-panel.is-open {
+    opacity: 1;
+    transform: none;
+  }
+
+  .menu-close {
+    border-color: currentColor;
+  }
+
+  .menu-close span[aria-hidden] {
+    position: relative;
+    display: block;
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+
+  .menu-close span[aria-hidden]::before,
+  .menu-close span[aria-hidden]::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-color: currentColor;
+  }
+
+  .menu-close span[aria-hidden]::before {
+    transform: rotate(45deg);
+  }
+
+  .menu-close span[aria-hidden]::after {
+    transform: rotate(-45deg);
+  }
+
+  /* The inverse-block hover: the row's background flips to paper and the text
+     to ink, so the panel reads as a stack of labels that light up. */
+  .menu-item {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 1.25rem;
+    color: var(--paper);
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  .dark .menu-item {
+    color: var(--ink);
+  }
+
+  .menu-item:hover,
+  .menu-item:focus-visible {
+    background-color: var(--paper);
+    color: var(--ink);
+    padding-inline: 0.75rem;
+  }
+
+  .dark .menu-item:hover,
+  .dark .menu-item:focus-visible {
+    background-color: var(--ink);
+    color: var(--paper);
+  }
+</style>

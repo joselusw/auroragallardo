@@ -1,0 +1,178 @@
+---
+/**
+ * The margin ruler — this site's one signature element.
+ *
+ * A designer's own instrument, drawn to the scale of the page: two hairlines
+ * running the full document height on the content column's edges, ticked every
+ * 24px down the left rule, with a live monospace readout of the page's
+ * vertical offset. It is the one thing on the page that is neither content nor
+ * chrome, and it is also load-bearing: the hairlines are what the sections
+ * divide themselves with, so the ruler is the layout device before it is the
+ * decoration.
+ *
+ * Purely decorative, so it is hidden from assistive tech and does not
+ * intercept pointer events.
+ */
+---
+
+<div class="ruler" aria-hidden="true">
+  <div class="ruler-rail"></div>
+  <div class="ruler-ticks"></div>
+  <p class="ruler-readout label" data-ruler-readout>Y 0000</p>
+</div>
+
+<style>
+  .ruler {
+    position: fixed;
+    inset-block: 0;
+    inset-inline: 0;
+    z-index: 30;
+    pointer-events: none;
+  }
+
+  /* The two hairlines. They share the shell's max-width and gutter so they
+     sit exactly on the content column's edges at every breakpoint.
+     inset-inline: 0 is load-bearing: an absolutely positioned box only centres
+     with auto margins once both offsets are resolved, not left to static. */
+  .ruler-rail {
+    position: absolute;
+    inset-block: 0;
+    inset-inline: 0;
+    width: 100%;
+    max-width: 100rem;
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+    border-inline: 1px solid var(--hairline);
+  }
+
+  /* Ticks live just outside the left rail, so they measure the outer margin
+     without crowding the text. 24px is the spacing base this layout is built
+     on. The rail's own left edge is max(0, 50% - 50rem): below the shell's
+     max-width the rail is full-bleed, so the offset clamps to the viewport. */
+  .ruler-ticks {
+    position: absolute;
+    inset-block: 0;
+    left: calc(max(0px, 50% - 50rem) - 7px);
+    width: 7px;
+    background-image: repeating-linear-gradient(to bottom, var(--hairline) 0 1px, transparent 1px 24px);
+    opacity: 0.7;
+  }
+
+  /* The readout. A Figma-style axis label right-aligned to the content edge
+     with a translate, so the alignment holds whatever the digit count. */
+  .ruler-readout {
+    position: absolute;
+    top: 6.5rem;
+    left: calc(max(0px, 50% - 50rem) + var(--gutter));
+    transform: translateX(-100%);
+    color: var(--ash);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  /* Below this width the shell is full-bleed: there is no margin, so the
+     instrument has nothing to measure and would only be clipped. The two
+     structural hairlines stay — they are layout, not decoration. */
+  @media (width < 112rem) {
+    .ruler-ticks,
+    .ruler-readout {
+      display: none;
+    }
+  }
+
+  /* ── Over a dark ground ─────────────────────────────────────────────────
+     The work section inverts, and the ruler is drawn in ink, so over that
+     ground it would simply disappear — leaving the content column undefined in
+     the one section that most needs it.
+
+     It re-draws itself in light instead. A `mix-blend-mode: difference` would
+     have done this in one line and is tempting, but the ruler spans the whole
+     viewport, so blending it would force a full-viewport composite on every
+     scroll frame — far too expensive to pay for a pair of hairlines. The
+     IntersectionObserver below costs nothing per frame. */
+  .ruler[data-over-dark] .ruler-rail {
+    border-inline-color: var(--hairline-inverted);
+  }
+
+  .ruler[data-over-dark] .ruler-ticks {
+    background-image: repeating-linear-gradient(to bottom, var(--hairline-inverted) 0 1px, transparent 1px 24px);
+  }
+
+  .ruler[data-over-dark] .ruler-readout {
+    color: var(--ash-inverted);
+  }
+</style>
+
+<script>
+  // Live axis readout. One rAF-throttled scroll listener writing a padded
+  // pixel value; the readout is a measurement, not an animation, so it is not
+  // gated on prefers-reduced-motion.
+  const readout = document.querySelector<HTMLElement>('[data-ruler-readout]');
+
+  if (readout) {
+    let ticking = false;
+    let last = -1;
+
+    const render = () => {
+      const y = Math.round(window.scrollY);
+      if (y !== last) {
+        last = y;
+        readout.textContent = `Y ${String(y).padStart(4, '0')}`;
+      }
+      ticking = false;
+    };
+
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(render);
+        ticking = true;
+      }
+    };
+
+    render();
+    document.addEventListener('scroll', onScroll, { passive: true });
+    // Client-side navigations restore scroll after astro:page-load, so the
+    // readout has to be re-synced rather than left at the previous page's value.
+    document.addEventListener('astro:page-load', render);
+  }
+
+  // Swap the ruler to its light strokes while an inverted ground is on screen.
+  //
+  // The ruler is `position: fixed` and spans the viewport, so it cannot inherit
+  // the work section's own tokens — the two are in different stacking
+  // contexts and the tokens simply do not reach across. Rather than read the
+  // backdrop on every scroll frame, this watches for grounds that opt in with
+  // `data-ground="dark"` and flips a single attribute when any of them is
+  // visible. It is an observer rather than a scroll handler precisely because
+  // the information is already what the browser tracks for us.
+  const ruler = document.querySelector<HTMLElement>('.ruler');
+
+  if (ruler) {
+    const grounds = document.querySelectorAll<HTMLElement>('[data-ground="dark"]');
+
+    if (grounds.length) {
+      // A Set of the grounds currently covering the viewport, not a counter.
+      // A counter is the obvious choice and is wrong: the observer's first
+      // callback reports current state, so a ground that starts off-screen
+      // enters as `isIntersecting: false` and would decrement a counter to -1,
+      // leaving the sum at 0 — not greater than 0 — the moment it scrolled in.
+      const covering = new Set<Element>();
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              covering.add(entry.target);
+            } else {
+              covering.delete(entry.target);
+            }
+          }
+          ruler.toggleAttribute('data-over-dark', covering.size > 0);
+        },
+        { threshold: 0 }
+      );
+
+      grounds.forEach((ground) => observer.observe(ground));
+    }
+  }
+</script>
